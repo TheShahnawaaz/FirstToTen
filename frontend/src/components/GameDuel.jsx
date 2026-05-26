@@ -437,12 +437,20 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
                 >
                   Incorrect! Try again.
                 </motion.span>
-              ) : inputValue ? (
-                <span className="text-xl font-bold font-mono text-cyan-400 border-b border-cyan-500/30 px-3 tracking-widest animate-pulse">
-                  {inputValue}
-                </span>
               ) : (
-                <span className="text-slate-650 font-mono text-[10px] tracking-wide">Waiting for input...</span>
+                <motion.div
+                  key="input-container"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center justify-center text-xl font-bold font-mono text-cyan-400 border-b border-cyan-500/30 px-3 min-w-[40px] h-8 tracking-widest"
+                >
+                  <span>{inputValue}</span>
+                  <motion.span 
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+                    className="w-[2px] h-5 bg-cyan-400 ml-1 inline-block"
+                  />
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
