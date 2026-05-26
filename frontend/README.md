@@ -186,6 +186,6 @@ Matchmaker (LOBBY)
 
 Part of the [First To Ten](https://github.com/TheShahnawaaz/FirstToTen) monorepo.
 
-*Auto-deployed via Vercel GitHub integration.*
+*Auto-deployed via Vercel & Render GitHub integrations.*
 
 </div>
