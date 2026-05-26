@@ -270,7 +270,7 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
   const endMsg = getRoundEndMessage();
 
   // SVG Circular progress configurations
-  const radius = 28;
+  const radius = 20;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (timeRemaining / 10) * circumference;
 
@@ -320,37 +320,67 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
       </div>
 
       {/* MATCH PLAYERS STATUS PANEL */}
-      <div className="grid grid-cols-2 gap-3 mt-4 select-none">
+      <div className="flex items-center justify-between gap-2 mt-4 select-none">
         
         {/* Left Side: You */}
-        <div className="glass-card rounded-xl p-3 flex flex-col items-start border-l-2 border-l-cyan-500 relative">
-          <div className="flex items-center gap-2.5 w-full">
+        <div className="glass-card rounded-xl p-2.5 flex-1 flex flex-col items-start border-l-2 border-l-cyan-500 relative min-w-0">
+          <div className="flex items-center gap-1.5 w-full">
             <img
               src={user.picture}
               alt=""
-              className="w-8 h-8 rounded-full border border-cyan-500/20 bg-slate-900"
+              className="w-7 h-7 rounded-full border border-cyan-500/20 bg-slate-900 flex-shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <span className="text-[8px] font-bold text-slate-500 block uppercase tracking-wider leading-none mb-0.5">YOU</span>
-              <span className="text-xs font-extrabold text-white block truncate leading-none">{user.name}</span>
+              <span className="text-[7px] font-bold text-slate-500 block uppercase tracking-wider leading-none mb-0.5">YOU</span>
+              <span className="text-[10px] font-extrabold text-white block truncate leading-none">{user.name}</span>
             </div>
-            <span className="text-lg font-black text-cyan-400 neon-text-cyan leading-none">{scores[user.id] || 0}</span>
+            <span className="text-base font-black text-cyan-400 neon-text-cyan leading-none flex-shrink-0">{scores[user.id] || 0}</span>
           </div>
           {renderScorePips(scores[user.id] || 0, 'bg-cyan-400 shadow-sm shadow-cyan-400/45')}
         </div>
 
+        {/* MIDDLE: Circular Timer */}
+        <div className="relative w-12 h-12 select-none flex-shrink-0">
+          <svg className="w-full h-full transform -rotate-90">
+            <circle
+              cx="24"
+              cy="24"
+              r={radius}
+              className="stroke-slate-850 stroke-[2] fill-none"
+            />
+            <motion.circle
+              cx="24"
+              cy="24"
+              r={radius}
+              className={`stroke-[2] fill-none ${
+                timeRemaining <= 3 ? 'stroke-rose-500' : 'stroke-cyan-400'
+              }`}
+              strokeDasharray={circumference}
+              animate={{ strokeDashoffset }}
+              transition={{ duration: 1, ease: 'linear' }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center font-mono">
+            <span className={`text-[11px] font-black tracking-tighter ${
+              timeRemaining <= 3 ? 'text-rose-500 animate-pulse text-xs' : 'text-slate-300'
+            }`}>
+              {timeRemaining}s
+            </span>
+          </div>
+        </div>
+
         {/* Right Side: Opponent */}
-        <div className="glass-card rounded-xl p-3 flex flex-col items-end border-r-2 border-r-purple-500 relative">
-          <div className="flex items-center gap-2.5 w-full justify-end text-right">
-            <span className="text-lg font-black text-purple-400 neon-text-purple leading-none">{scores[opponent.id] || 0}</span>
+        <div className="glass-card rounded-xl p-2.5 flex-1 flex flex-col items-end border-r-2 border-r-purple-500 relative min-w-0">
+          <div className="flex items-center gap-1.5 w-full justify-end text-right">
+            <span className="text-base font-black text-purple-400 neon-text-purple leading-none flex-shrink-0">{scores[opponent.id] || 0}</span>
             <div className="min-w-0 flex-1">
-              <span className="text-[8px] font-bold text-slate-500 block uppercase tracking-wider leading-none mb-0.5">OPPONENT</span>
-              <span className="text-xs font-extrabold text-white block truncate leading-none">{opponent.name}</span>
+              <span className="text-[7px] font-bold text-slate-500 block uppercase tracking-wider leading-none mb-0.5">OPPONENT</span>
+              <span className="text-[10px] font-extrabold text-white block truncate leading-none">{opponent.name}</span>
             </div>
             <img
               src={opponent.picture}
               alt=""
-              className="w-8 h-8 rounded-full border border-purple-500/20 bg-slate-900"
+              className="w-7 h-7 rounded-full border border-purple-500/20 bg-slate-900 flex-shrink-0"
             />
           </div>
           {renderScorePips(scores[opponent.id] || 0, 'bg-purple-400 shadow-sm shadow-purple-400/45')}
@@ -374,37 +404,7 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
       </div>
 
       {/* GAMEPLAY CORE DESK */}
-      <div className="flex flex-col items-center justify-center py-4 flex-grow">
-        
-        {/* Progress Circular Timer */}
-        <div className="relative w-16 h-16 mb-4 select-none">
-          <svg className="w-full h-full transform -rotate-90">
-            <circle
-              cx="32"
-              cy="32"
-              r={radius}
-              className="stroke-slate-850 stroke-[3] fill-none"
-            />
-            <motion.circle
-              cx="32"
-              cy="32"
-              r={radius}
-              className={`stroke-[3] fill-none ${
-                timeRemaining <= 3 ? 'stroke-rose-500' : 'stroke-cyan-400'
-              }`}
-              strokeDasharray={circumference}
-              animate={{ strokeDashoffset }}
-              transition={{ duration: 1, ease: 'linear' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center font-mono">
-            <span className={`text-sm font-extrabold tracking-tighter ${
-              timeRemaining <= 3 ? 'text-rose-500 animate-pulse text-base' : 'text-slate-350'
-            }`}>
-              {timeRemaining}s
-            </span>
-          </div>
-        </div>
+      <div className="flex flex-col items-center justify-center py-2 flex-grow">
 
         {/* MATH QUESTION DISPLAY SCREEN */}
         <motion.div
