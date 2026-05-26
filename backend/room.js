@@ -17,6 +17,7 @@ export class GameRoom {
     this.timerInterval = null;
     this.timeRemaining = 10;
     this.transitionTimeout = null;
+    this.startTimeout = null;
 
     // Track detailed metrics for final analysis
     // Structure: { round: 1, question: "12 + 34", winnerId: "xyz" | null, details: { [playerId]: { wrongAnswers: 0, times: [] } } }
@@ -290,5 +291,6 @@ export class GameRoom {
   cleanup() {
     if (this.timerInterval) clearInterval(this.timerInterval);
     if (this.transitionTimeout) clearTimeout(this.transitionTimeout);
+    if (this.startTimeout) clearTimeout(this.startTimeout);
   }
 }

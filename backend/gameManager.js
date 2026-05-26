@@ -54,9 +54,13 @@ class GameManager {
         scores: room.scores
       });
 
-      room.startRound();
-
       this.setupRoomSocketListeners(room);
+
+      // Start the first round after a short delay (1.2s) to allow clients 
+      // to transition to the GAME screen and register their socket event listeners.
+      room.startTimeout = setTimeout(() => {
+        room.startRound();
+      }, 1200);
     }
   }
 
