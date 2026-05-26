@@ -6,8 +6,9 @@
 
 **A fast-paced 1v1 math duel game. First player to correctly solve 10 rounds wins.**
 
-[![Frontend](https://img.shields.io/badge/Frontend-Vercel-000000?style=for-the-badge&logo=vercel)](https://firsttoten.vercel.app)
-[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render)](https://firsttoten.onrender.com)
+[![Frontend](https://img.shields.io/badge/Frontend-Vercel-000000?style=for-the-badge&logo=vercel)](https://first-to-ten.vercel.app)
+[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render)](https://first-to-ten-backend.onrender.com)
+[![GitHub](https://img.shields.io/badge/GitHub-TheShahnawaaz-181717?style=for-the-badge&logo=github)](https://github.com/TheShahnawaaz/FirstToTen)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -217,10 +218,12 @@ npm run dev-frontend   # frontend only
 
 ### Frontend → Vercel
 
+🌐 **Live:** [https://first-to-ten.vercel.app](https://first-to-ten.vercel.app)
+
 The frontend is deployed on [Vercel](https://vercel.com). Set the following environment variable in the Vercel dashboard:
 
 ```
-VITE_API_URL=https://your-backend.onrender.com
+VITE_API_URL=https://first-to-ten-backend.onrender.com
 ```
 
 Build settings:
@@ -230,10 +233,13 @@ Build settings:
 
 ### Backend → Render
 
+🌐 **Live:** [https://first-to-ten-backend.onrender.com](https://first-to-ten-backend.onrender.com)
+
 The backend is deployed on [Render](https://render.com) as a Web Service. Set the following environment variables in the Render dashboard:
 
 ```
 PORT=5050
+NODE_ENV=production
 ```
 
 Render settings:
