@@ -6,7 +6,7 @@
 
 **A fast-paced 1v1 math duel game. First player to correctly solve 10 rounds wins.**
 
-[![Frontend](https://img.shields.io/badge/Frontend-Vercel-000000?style=for-the-badge&logo=vercel)](https://first-to-ten.vercel.app)
+[![Frontend](https://img.shields.io/badge/Frontend-Vercel-000000?style=for-the-badge&logo=vercel)](https://f2ten.theshahnawaz.in)
 [![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render)](https://first-to-ten-backend.onrender.com)
 [![GitHub](https://img.shields.io/badge/GitHub-TheShahnawaaz-181717?style=for-the-badge&logo=github)](https://github.com/TheShahnawaaz/FirstToTen)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
@@ -218,7 +218,7 @@ npm run dev-frontend   # frontend only
 
 ### Frontend → Vercel
 
-🌐 **Live:** [https://first-to-ten.vercel.app](https://first-to-ten.vercel.app)
+🌐 **Live:** [https://f2ten.theshahnawaz.in](https://f2ten.theshahnawaz.in)
 
 The frontend is deployed on [Vercel](https://vercel.com). Set the following environment variable in the Vercel dashboard:
 
