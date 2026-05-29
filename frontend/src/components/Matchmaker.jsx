@@ -79,7 +79,7 @@ export default function Matchmaker({ user, onLogout, socket, onMatchFound }) {
               <img
                 src={user.picture}
                 alt=""
-                className="w-full h-full object-cover filter grayscale"
+                className="w-full h-full object-cover"
               />
             </div>
             <div className="flex flex-col">

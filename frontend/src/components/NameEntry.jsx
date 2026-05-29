@@ -65,7 +65,7 @@ export default function NameEntry({ onLogin, socket }) {
             <img
               src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${seed}`}
               alt="Avatar"
-              className="w-full h-full object-contain filter grayscale opacity-90 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+              className="w-full h-full object-contain filter opacity-90 group-hover:opacity-100 transition-all duration-300"
             />
           </div>
           <motion.button

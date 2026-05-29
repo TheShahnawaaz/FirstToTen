@@ -268,7 +268,7 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
         <div className="flex-1 flex flex-col items-start min-w-0 bg-[#111111] border border-white/10 rounded-xl p-2.5">
           <div className="flex items-center gap-2 w-full">
             <div className="w-6 h-6 rounded-full border border-white/10 bg-[#1a1a1a] flex-shrink-0 overflow-hidden">
-              <img src={user.picture} alt="" className="w-full h-full object-cover filter grayscale" />
+              <img src={user.picture} alt="" className="w-full h-full object-cover" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-[8px] font-semibold text-zinc-500 block uppercase tracking-wider leading-none mb-0.5">You</span>
@@ -319,7 +319,7 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
               <span className="text-xs font-semibold text-zinc-300 block truncate leading-none">{opponent.name}</span>
             </div>
             <div className="w-6 h-6 rounded-full border border-white/10 bg-[#1a1a1a] flex-shrink-0 overflow-hidden opacity-80">
-              <img src={opponent.picture} alt="" className="w-full h-full object-cover filter grayscale" />
+              <img src={opponent.picture} alt="" className="w-full h-full object-cover" />
             </div>
           </div>
           {renderScorePips(scores[opponent.id] || 0, false)}
