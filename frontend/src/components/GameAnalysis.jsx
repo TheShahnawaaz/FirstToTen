@@ -2,6 +2,8 @@ import React from 'react';
 import { Trophy, RefreshCw, Zap, Target } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { motion } from 'framer-motion';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 
 export default function GameAnalysis({ user, opponent, analysis, onRestart }) {
   const isWinner = analysis.winnerId === user.id;
@@ -24,142 +26,147 @@ export default function GameAnalysis({ user, opponent, analysis, onRestart }) {
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4 py-6 flex flex-col gap-6 select-none">
+    <div className="w-full max-w-xl mx-auto flex flex-col gap-4 select-none">
       
       {/* WINNER CARD STATUS BANNER */}
       <motion.div
-        initial={{ opacity: 0, y: -15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`glass-card rounded-2xl p-6 text-center flex flex-col items-center border border-slate-800/80 shadow-2xl relative overflow-hidden`}
+        initial={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-slate-900/20 to-transparent pointer-events-none"></div>
+        <Card className="p-8 text-center flex flex-col items-center surface-card relative overflow-hidden bg-[#111111]">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
 
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 border ${
-          isWinner 
-            ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' 
-            : 'bg-purple-500/10 border-purple-500/30 text-purple-400'
-        }`}>
-          <Trophy className="w-6 h-6" />
-        </div>
-
-        <h2 className={`text-2xl font-black uppercase tracking-wider leading-none mb-1.5 ${
-          isWinner ? 'text-cyan-400 neon-text-cyan' : 'text-purple-400 neon-text-purple'
-        }`}>
-          {isWinner ? 'Victory!' : 'Defeat'}
-        </h2>
-        
-        <p className="text-xs text-slate-500 max-w-[280px] leading-normal mb-5">
-          {isWinner 
-            ? `Excellent performance! You scored 10 points first.` 
-            : `Good try! Your opponent answered faster in this duel.`}
-        </p>
-
-        {/* Final score indicator */}
-        <div className="flex items-center gap-5 bg-slate-900/60 border border-slate-850 py-2 px-6 rounded-full text-sm">
-          <div className="text-center font-bold">
-            <span className="block text-[8px] font-bold text-slate-500 uppercase leading-none mb-0.5">You</span>
-            <span className="text-white leading-none">{analysis.finalScores[p1Id]}</span>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 border ${
+            isWinner 
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+              : 'bg-zinc-800/50 border-white/10 text-zinc-400'
+          }`}>
+            <Trophy className="w-5 h-5" />
           </div>
-          <span className="text-slate-700 font-bold">:</span>
-          <div className="text-center font-bold">
-            <span className="block text-[8px] font-bold text-slate-500 uppercase leading-none mb-0.5">Opponent</span>
-            <span className="text-white leading-none">{analysis.finalScores[p2Id]}</span>
+
+          <h2 className={`text-2xl font-bold tracking-tight mb-2 ${
+            isWinner ? 'text-white' : 'text-zinc-300'
+          }`}>
+            {isWinner ? 'Victory' : 'Defeat'}
+          </h2>
+          
+          <p className="text-sm text-zinc-500 max-w-[280px] leading-relaxed mb-6">
+            {isWinner 
+              ? `Excellent performance! You scored 10 points first.` 
+              : `Good try! Your opponent answered faster in this duel.`}
+          </p>
+
+          {/* Final score indicator */}
+          <div className="flex items-center gap-6 bg-[#1a1a1a] border border-white/10 py-3 px-8 rounded-full text-sm shadow-inner">
+            <div className="text-center font-bold">
+              <span className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-widest leading-none mb-1">You</span>
+              <span className="text-xl text-white leading-none font-mono">{analysis.finalScores[p1Id]}</span>
+            </div>
+            <span className="text-zinc-700 font-medium text-xl">:</span>
+            <div className="text-center font-bold">
+              <span className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-widest leading-none mb-1">Opponent</span>
+              <span className="text-xl text-zinc-400 leading-none font-mono">{analysis.finalScores[p2Id]}</span>
+            </div>
           </div>
-        </div>
+        </Card>
       </motion.div>
 
       {/* LINE CHART GRAPH CARD */}
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        className="glass-card rounded-2xl p-5 border border-slate-800/80 shadow-xl"
+        initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.3, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       >
-        <h3 className="text-sm font-bold text-slate-350 mb-4 text-center leading-none">Scoring Progression</h3>
-        
-        <div className="w-full h-52 pr-2 text-[10px] font-mono text-slate-500">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
-              <XAxis dataKey="round" stroke="#6b7280" tickLine={false} />
-              <YAxis domain={[0, 10]} stroke="#6b7280" tickCount={6} tickLine={false} />
-              <Tooltip
-                contentStyle={{ background: '#0a0d1e', borderColor: '#1f2937', borderRadius: '10px' }}
-                itemStyle={{ fontWeight: 'bold' }}
-              />
-              <Legend wrapperStyle={{ paddingTop: '10px' }} />
-              <Line
-                type="monotone"
-                dataKey={user.name}
-                stroke="#06b6d4"
-                strokeWidth={2.5}
-                activeDot={{ r: 5 }}
-                dot={{ stroke: '#06b6d4', strokeWidth: 1, r: 2 }}
-              />
-              <Line
-                type="monotone"
-                dataKey={opponent.name}
-                stroke="#d946ef"
-                strokeWidth={2.5}
-                activeDot={{ r: 5 }}
-                dot={{ stroke: '#d946ef', strokeWidth: 1, r: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <Card className="p-6 bg-[#111111]">
+          <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-6 text-center leading-none">Scoring Progression</h3>
+          
+          <div className="w-full h-48 pr-4 text-[10px] font-mono text-zinc-500">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#222222" vertical={false} />
+                <XAxis dataKey="round" stroke="#52525b" tickLine={false} axisLine={false} dy={10} />
+                <YAxis domain={[0, 10]} stroke="#52525b" tickCount={6} tickLine={false} axisLine={false} dx={-10} />
+                <Tooltip
+                  contentStyle={{ background: '#111111', borderColor: '#333333', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                  itemStyle={{ fontWeight: '500' }}
+                  cursor={{ stroke: '#333333', strokeWidth: 1, strokeDasharray: '4 4' }}
+                />
+                <Legend wrapperStyle={{ paddingTop: '15px', fontSize: '11px' }} iconType="circle" />
+                <Line
+                  type="monotone"
+                  dataKey={user.name}
+                  stroke="#ffffff"
+                  strokeWidth={2}
+                  activeDot={{ r: 4, fill: '#ffffff', stroke: '#000000', strokeWidth: 2 }}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={opponent.name}
+                  stroke="#71717a"
+                  strokeWidth={2}
+                  activeDot={{ r: 4, fill: '#71717a', stroke: '#000000', strokeWidth: 2 }}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
       </motion.div>
 
       {/* MATCH PERFORMANCE METRICS */}
       <div className="grid grid-cols-2 gap-4">
-        
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass-card rounded-2xl p-4 border border-slate-800/80 flex flex-col justify-between"
+          initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.3, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="flex items-center gap-1.5 text-cyan-400 mb-2">
-            <Zap className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Avg Speed</span>
-          </div>
-          <div>
-            <span className="text-xl font-bold font-mono text-white block">{formatTime(myStats.avgSpeedMs)}</span>
-            <span className="text-[9px] text-slate-500 block mt-0.5">Opponent: {formatTime(oppStats.avgSpeedMs)}</span>
-          </div>
+          <Card className="p-5 flex flex-col justify-between bg-[#111111] h-full">
+            <div className="flex items-center gap-2 text-zinc-400 mb-3">
+              <Zap className="w-4 h-4" />
+              <span className="text-[10px] font-semibold uppercase tracking-widest">Avg Speed</span>
+            </div>
+            <div>
+              <span className="text-2xl font-bold font-mono text-white block">{formatTime(myStats.avgSpeedMs)}</span>
+              <span className="text-[10px] font-medium text-zinc-500 block mt-1">Opponent: {formatTime(oppStats.avgSpeedMs)}</span>
+            </div>
+          </Card>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="glass-card rounded-2xl p-4 border border-slate-800/80 flex flex-col justify-between"
+          initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.3, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="flex items-center gap-1.5 text-purple-400 mb-2">
-            <Target className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Accuracy</span>
-          </div>
-          <div>
-            <span className="text-xl font-bold font-mono text-white block">{myStats.accuracy}%</span>
-            <span className="text-[9px] text-slate-500 block mt-0.5">Opponent: {oppStats.accuracy}%</span>
-          </div>
+          <Card className="p-5 flex flex-col justify-between bg-[#111111] h-full">
+            <div className="flex items-center gap-2 text-zinc-400 mb-3">
+              <Target className="w-4 h-4" />
+              <span className="text-[10px] font-semibold uppercase tracking-widest">Accuracy</span>
+            </div>
+            <div>
+              <span className="text-2xl font-bold font-mono text-white block">{myStats.accuracy}%</span>
+              <span className="text-[10px] font-medium text-zinc-500 block mt-1">Opponent: {oppStats.accuracy}%</span>
+            </div>
+          </Card>
         </motion.div>
-        
       </div>
 
       {/* FOOTER BUTTON ACTION */}
-      <motion.button
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        onClick={onRestart}
-        className="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-extrabold text-sm tracking-wider transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
+      <motion.div
+        initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.3, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        className="mt-2"
       >
-        <RefreshCw className="w-4 h-4" />
-        PLAY AGAIN
-      </motion.button>
+        <Button onClick={onRestart} variant="primary" className="w-full gap-2">
+          <RefreshCw className="w-4 h-4 opacity-80" />
+          Play Again
+        </Button>
+      </motion.div>
       
     </div>
   );

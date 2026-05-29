@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, VolumeX, LogOut, CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VirtualNumpad from './VirtualNumpad';
 import audio from '../utils/audio';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 
 export default function GameDuel({ user, opponent, socket, initialScores, onLeave, onGameOver }) {
   const [scores, setScores] = useState(initialScores || {});
@@ -176,91 +178,31 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
       return {
         title: 'Opponent Left',
         desc: 'The opponent exited the match early. You win the session!',
-        icon: <AlertCircle className="w-12 h-12 text-cyan-400 mb-3 animate-pulse" />
+        icon: <AlertCircle className="w-10 h-10 text-indigo-400 mb-3" />
       };
     }
 
     if (!winnerId) {
-      if (roundDetails) {
-        const p1Wrong = roundDetails[user.id]?.wrongAnswers || 0;
-        const p2Wrong = roundDetails[opponent.id]?.wrongAnswers || 0;
-        
-        if (p1Wrong > 0 && p2Wrong > 0) {
-          return {
-            title: 'Double Mistake!',
-            desc: 'Both of you submitted wrong answers, and time ran out.',
-            icon: <XCircle className="w-12 h-12 text-amber-500 mb-3" />
-          };
-        } else if (p1Wrong > 0) {
-          return {
-            title: 'Round Tied',
-            desc: "Time's up! You guessed wrong, and neither player solved it.",
-            icon: <AlertCircle className="w-12 h-12 text-amber-500 mb-3" />
-          };
-        } else if (p2Wrong > 0) {
-          return {
-            title: 'Round Tied',
-            desc: "Time's up! Opponent guessed wrong, and neither player solved it.",
-            icon: <AlertCircle className="w-12 h-12 text-amber-500 mb-3" />
-          };
-        }
-      }
       return {
         title: "Time's Up!",
-        desc: 'Neither player answered correctly in 10 seconds.',
-        icon: <AlertCircle className="w-12 h-12 text-amber-500 mb-3" />
+        desc: 'Neither player answered correctly.',
+        icon: <AlertCircle className="w-10 h-10 text-zinc-500 mb-3" />
       };
     }
 
     if (winnerId === user.id) {
-      if (roundDetails) {
-        const myWrong = roundDetails[user.id]?.wrongAnswers || 0;
-        const oppWrong = roundDetails[opponent.id]?.wrongAnswers || 0;
-        
-        if (oppWrong > 0 && myWrong === 0) {
-          return {
-            title: 'Capitalized!',
-            desc: `Opponent guessed wrong, and you sealed the point in ${(elapsedMs / 1000).toFixed(2)}s!`,
-            icon: <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-3 animate-bounce" />
-          };
-        } else if (myWrong > 0) {
-          return {
-            title: 'Clutch Recovery!',
-            desc: `You made a mistake but corrected it first in ${(elapsedMs / 1000).toFixed(2)}s!`,
-            icon: <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-3 animate-bounce" />
-          };
-        }
-      }
       return {
         title: 'Round Won!',
-        desc: `You answered correctly first in ${(elapsedMs / 1000).toFixed(2)}s!`,
-        icon: <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-3 animate-bounce" />
+        desc: `You answered correctly in ${(elapsedMs / 1000).toFixed(2)}s.`,
+        icon: <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-3" />
       };
     }
 
     if (winnerId === opponent.id) {
-      if (roundDetails) {
-        const myWrong = roundDetails[user.id]?.wrongAnswers || 0;
-        const oppWrong = roundDetails[opponent.id]?.wrongAnswers || 0;
-        
-        if (myWrong > 0 && oppWrong === 0) {
-          return {
-            title: 'Punished!',
-            desc: 'You guessed wrong, giving your opponent time to solve it.',
-            icon: <XCircle className="w-12 h-12 text-rose-500 mb-3" />
-          };
-        } else if (oppWrong > 0) {
-          return {
-            title: 'Opponent Recovered',
-            desc: 'Opponent recovered from an incorrect guess to beat you to the answer.',
-            icon: <XCircle className="w-12 h-12 text-rose-500 mb-3" />
-          };
-        }
-      }
       return {
         title: 'Round Lost',
         desc: 'Opponent answered correctly first.',
-        icon: <XCircle className="w-12 h-12 text-rose-500 mb-3" />
+        icon: <XCircle className="w-10 h-10 text-rose-500 mb-3" />
       };
     }
 
@@ -270,22 +212,22 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
   const endMsg = getRoundEndMessage();
 
   // SVG Circular progress configurations
-  const radius = 20;
+  const radius = 22;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (timeRemaining / 10) * circumference;
 
-  const renderScorePips = (playerScore, colorClass) => {
+  const renderScorePips = (playerScore, isActivePlayer = true) => {
     return (
-      <div className="flex gap-1 mt-2">
+      <div className="flex gap-[2px] mt-2 w-full">
         {Array.from({ length: 10 }).map((_, idx) => {
-          const isActive = idx < playerScore;
+          const isScored = idx < playerScore;
           return (
             <div
               key={idx}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                isActive 
-                  ? colorClass 
-                  : 'bg-slate-800 border border-slate-700/60'
+              className={`flex-1 h-1 rounded-full transition-all duration-300 ${
+                isScored 
+                  ? isActivePlayer ? 'bg-white' : 'bg-zinc-400'
+                  : 'bg-white/10'
               }`}
             />
           );
@@ -295,106 +237,103 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto px-4 py-5 flex flex-col min-h-[92svh] justify-between relative overflow-hidden">
+    <div className="w-full max-w-md mx-auto flex flex-col min-h-[92svh] justify-between relative overflow-hidden">
       
       {/* HEADER BAR */}
-      <div className="flex justify-between items-center border-b border-slate-850/80 pb-3 select-none">
+      <div className="flex justify-between items-center py-4 border-b border-white/10 select-none">
         <button
           onClick={handleForfeit}
-          className="flex items-center gap-1 py-1 px-2.5 rounded-lg border border-slate-850 bg-slate-900/40 text-[10px] font-bold text-slate-400 hover:text-rose-400 transition-colors"
+          className="text-xs font-semibold text-zinc-500 hover:text-white transition-colors"
         >
           Forfeit
         </button>
 
-        <div className="text-center">
-          <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-0.5">DUEL ARENA</span>
-          <span className="text-xs font-black text-cyan-400 neon-text-cyan leading-none">ROUND {roundNum}</span>
+        <div className="flex flex-col items-center">
+          <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-none mb-1">Match</span>
+          <span className="text-sm font-semibold text-white leading-none">Round {roundNum}</span>
         </div>
 
         <button
           onClick={handleToggleMute}
-          className="p-1.5 rounded-lg border border-slate-850 bg-slate-900/40 text-slate-400 hover:text-white transition-colors"
+          className="text-zinc-500 hover:text-white transition-colors"
         >
-          {muted ? <VolumeX className="w-3.5 h-3.5 text-rose-500" /> : <Volume2 className="w-3.5 h-3.5 text-cyan-400" />}
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>
       </div>
 
       {/* MATCH PLAYERS STATUS PANEL */}
-      <div className="flex items-center justify-between gap-2 mt-4 select-none">
+      <div className="flex items-stretch justify-between gap-3 mt-6 select-none h-16">
         
         {/* Left Side: You */}
-        <div className="glass-card rounded-xl p-2.5 flex-1 flex flex-col items-start border-l-2 border-l-cyan-500 relative min-w-0">
-          <div className="flex items-center gap-1.5 w-full">
-            <img
-              src={user.picture}
-              alt=""
-              className="w-7 h-7 rounded-full border border-cyan-500/20 bg-slate-900 flex-shrink-0"
-            />
-            <div className="min-w-0 flex-1">
-              <span className="text-[7px] font-bold text-slate-500 block uppercase tracking-wider leading-none mb-0.5">YOU</span>
-              <span className="text-[10px] font-extrabold text-white block truncate leading-none">{user.name}</span>
+        <div className="flex-1 flex flex-col items-start min-w-0 bg-[#111111] border border-white/10 rounded-xl p-2.5">
+          <div className="flex items-center gap-2 w-full">
+            <div className="w-6 h-6 rounded-full border border-white/10 bg-[#1a1a1a] flex-shrink-0 overflow-hidden">
+              <img src={user.picture} alt="" className="w-full h-full object-cover filter grayscale" />
             </div>
-            <span className="text-base font-black text-cyan-400 neon-text-cyan leading-none flex-shrink-0">{scores[user.id] || 0}</span>
+            <div className="min-w-0 flex-1">
+              <span className="text-[8px] font-semibold text-zinc-500 block uppercase tracking-wider leading-none mb-0.5">You</span>
+              <span className="text-xs font-semibold text-white block truncate leading-none">{user.name}</span>
+            </div>
+            <span className="text-sm font-bold text-white flex-shrink-0">{scores[user.id] || 0}</span>
           </div>
-          {renderScorePips(scores[user.id] || 0, 'bg-cyan-400 shadow-sm shadow-cyan-400/45')}
+          {renderScorePips(scores[user.id] || 0, true)}
         </div>
 
         {/* MIDDLE: Circular Timer */}
-        <div className="relative w-12 h-12 select-none flex-shrink-0">
-          <svg className="w-full h-full transform -rotate-90">
+        <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center bg-[#111111] border border-white/10 rounded-xl">
+          <svg className="w-12 h-12 transform -rotate-90">
             <circle
               cx="24"
               cy="24"
               r={radius}
-              className="stroke-slate-850 stroke-[2] fill-none"
+              className="stroke-white/5 stroke-[2] fill-none"
             />
             <motion.circle
               cx="24"
               cy="24"
               r={radius}
               className={`stroke-[2] fill-none ${
-                timeRemaining <= 3 ? 'stroke-rose-500' : 'stroke-cyan-400'
+                timeRemaining <= 3 ? 'stroke-rose-500' : 'stroke-white'
               }`}
               strokeDasharray={circumference}
               animate={{ strokeDashoffset }}
               transition={{ duration: 1, ease: 'linear' }}
+              strokeLinecap="round"
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center font-mono">
-            <span className={`text-[11px] font-black tracking-tighter ${
-              timeRemaining <= 3 ? 'text-rose-500 animate-pulse text-xs' : 'text-slate-300'
+            <span className={`text-[13px] font-semibold ${
+              timeRemaining <= 3 ? 'text-rose-500 text-sm animate-pulse' : 'text-zinc-300'
             }`}>
-              {timeRemaining}s
+              {timeRemaining}
             </span>
           </div>
         </div>
 
         {/* Right Side: Opponent */}
-        <div className="glass-card rounded-xl p-2.5 flex-1 flex flex-col items-end border-r-2 border-r-purple-500 relative min-w-0">
-          <div className="flex items-center gap-1.5 w-full justify-end text-right">
-            <span className="text-base font-black text-purple-400 neon-text-purple leading-none flex-shrink-0">{scores[opponent.id] || 0}</span>
+        <div className="flex-1 flex flex-col items-end min-w-0 bg-[#111111] border border-white/10 rounded-xl p-2.5 relative">
+          <div className="flex items-center gap-2 w-full justify-end text-right">
+            <span className="text-sm font-bold text-zinc-400 flex-shrink-0">{scores[opponent.id] || 0}</span>
             <div className="min-w-0 flex-1">
-              <span className="text-[7px] font-bold text-slate-500 block uppercase tracking-wider leading-none mb-0.5">OPPONENT</span>
-              <span className="text-[10px] font-extrabold text-white block truncate leading-none">{opponent.name}</span>
+              <span className="text-[8px] font-semibold text-zinc-500 block uppercase tracking-wider leading-none mb-0.5">Opponent</span>
+              <span className="text-xs font-semibold text-zinc-300 block truncate leading-none">{opponent.name}</span>
             </div>
-            <img
-              src={opponent.picture}
-              alt=""
-              className="w-7 h-7 rounded-full border border-purple-500/20 bg-slate-900 flex-shrink-0"
-            />
+            <div className="w-6 h-6 rounded-full border border-white/10 bg-[#1a1a1a] flex-shrink-0 overflow-hidden opacity-80">
+              <img src={opponent.picture} alt="" className="w-full h-full object-cover filter grayscale" />
+            </div>
           </div>
-          {renderScorePips(scores[opponent.id] || 0, 'bg-purple-400 shadow-sm shadow-purple-400/45')}
+          {renderScorePips(scores[opponent.id] || 0, false)}
           
           {/* Real-time typing status tag */}
           <AnimatePresence>
             {opponentTyping && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="absolute -bottom-5 right-2 flex items-center gap-1 py-0.5 px-2 rounded-full border border-purple-800/40 bg-purple-950/20 text-[8px] font-bold text-purple-400"
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="absolute -top-7 right-0 flex items-center gap-1.5 py-1 px-2.5 rounded border border-indigo-500/20 bg-indigo-500/10 text-[9px] font-semibold text-indigo-400"
               >
-                <span className="w-1 h-1 rounded-full bg-purple-400 animate-ping"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
                 Typing...
               </motion.div>
             )}
@@ -404,28 +343,26 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
       </div>
 
       {/* GAMEPLAY CORE DESK */}
-      <div className="flex flex-col items-center justify-center py-2 flex-grow">
-
+      <div className="flex flex-col items-center justify-center py-6 flex-grow">
         {/* MATH QUESTION DISPLAY SCREEN */}
         <motion.div
           animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}
-          className={`w-full max-w-sm glass-card rounded-2xl p-6 text-center flex flex-col items-center justify-center relative overflow-hidden min-h-[140px] border transition-colors duration-200 ${
+          className={`w-full bg-[#111111] rounded-2xl p-8 text-center flex flex-col items-center justify-center relative min-h-[180px] border transition-colors duration-200 ${
             shake 
-              ? 'border-rose-500/50 shadow-rose-950/25' 
+              ? 'border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.1)]' 
               : roundStatus === 'ended' && roundEndData?.winnerId === user.id
-              ? 'border-emerald-500/40 shadow-emerald-950/10'
-              : 'border-slate-800/80'
+              ? 'border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
+              : 'border-white/10'
           }`}
         >
-          {/* Question Text */}
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 leading-none">SOLVE THIS</span>
-          <h2 className="text-3xl font-black text-white leading-tight font-mono tracking-wide m-0">
+          <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-2 leading-none">Solve This</span>
+          <h2 className="text-5xl font-semibold text-white leading-tight font-mono tracking-tight m-0">
             {questionText}
           </h2>
 
           {/* Value Display */}
-          <div className="mt-4 flex flex-col items-center justify-center h-8 w-full select-none">
+          <div className="mt-8 flex flex-col items-center justify-center h-10 w-full select-none">
             <AnimatePresence mode="wait">
               {showErrorNotice ? (
                 <motion.span
@@ -433,7 +370,7 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
-                  className="text-xs font-semibold text-rose-500"
+                  className="text-sm font-medium text-rose-500"
                 >
                   Incorrect! Try again.
                 </motion.span>
@@ -442,13 +379,13 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
                   key="input-container"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center justify-center text-xl font-bold font-mono text-cyan-400 border-b border-cyan-500/30 px-3 min-w-[40px] h-8 tracking-widest"
+                  className="flex items-center justify-center text-2xl font-semibold font-mono text-white border-b-2 border-white/20 px-4 min-w-[60px] h-10 tracking-widest pb-1"
                 >
                   <span>{inputValue}</span>
                   <motion.span 
                     animate={{ opacity: [1, 0, 1] }}
-                    transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
-                    className="w-[2px] h-5 bg-cyan-400 ml-1 inline-block"
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="w-0.5 h-6 bg-indigo-500 ml-1.5 inline-block"
                   />
                 </motion.div>
               )}
@@ -474,43 +411,45 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-50 p-6 select-none"
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 p-6 select-none"
           >
             <motion.div
-              initial={{ scale: 0.94, y: 10 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.94, y: -10 }}
-              className="glass-card max-w-sm w-full rounded-2xl p-6 border border-slate-800 text-center flex flex-col items-center"
+              initial={{ scale: 0.96, y: 10, filter: 'blur(4px)' }}
+              animate={{ scale: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ scale: 0.96, y: -10, filter: 'blur(4px)' }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-[#111111] max-w-sm w-full rounded-2xl p-8 border border-white/10 text-center flex flex-col items-center shadow-2xl"
             >
               {endMsg.icon}
-              <h3 className="text-xl font-black text-white uppercase tracking-wider leading-tight mb-1">
+              <h3 className="text-xl font-semibold text-white tracking-tight leading-tight mb-2">
                 {endMsg.title}
               </h3>
-              <p className="text-[11px] text-slate-400 leading-normal mb-5 max-w-[220px]">
+              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
                 {endMsg.desc}
               </p>
 
               {/* Reveal Correct Answer */}
-              <div className="w-full bg-slate-900/80 border border-slate-850 p-3 rounded-xl text-center">
-                <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Correct Answer</span>
-                <span className="text-lg font-bold font-mono text-white leading-none">{roundEndData.correctAnswer}</span>
+              <div className="w-full bg-[#1a1a1a] border border-white/5 p-4 rounded-xl text-center mb-6">
+                <span className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-widest mb-1">Correct Answer</span>
+                <span className="text-2xl font-semibold font-mono text-white leading-none">{roundEndData.correctAnswer}</span>
               </div>
 
               {/* Loader Countdown Progress bar or exit lobby action */}
               {roundEndData.reason === 'opponent_disconnected' || roundEndData.reason === 'opponent_left' ? (
-                <button
+                <Button
                   onClick={onLeave}
-                  className="w-full mt-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs tracking-wider transition-colors active:scale-[0.98]"
+                  variant="primary"
+                  className="w-full"
                 >
                   Return to Lobby
-                </button>
+                </Button>
               ) : (
-                <div className="mt-5 w-full bg-slate-900 h-1 rounded-full overflow-hidden">
+                <div className="w-full bg-[#1a1a1a] h-1 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: '100%' }}
                     animate={{ width: '0%' }}
                     transition={{ duration: 3, ease: 'linear' }}
-                    className="h-full bg-cyan-400"
+                    className="h-full bg-white"
                   />
                 </div>
               )}

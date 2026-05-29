@@ -4,8 +4,9 @@ import NameEntry from './components/NameEntry';
 import Matchmaker from './components/Matchmaker';
 import GameDuel from './components/GameDuel';
 import GameAnalysis from './components/GameAnalysis';
-import { Sparkles, Wifi, WifiOff } from 'lucide-react';
+import { Wifi, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from './utils/cn';
 
 // Establish connection to backend socket server
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
@@ -71,54 +72,50 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07080e] relative text-slate-100 flex flex-col font-sans overflow-x-hidden antialiased">
-      {/* BACKGROUND NEON LIGHT GLOWS */}
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-radial-cyan opacity-35 pointer-events-none z-0" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-radial-purple opacity-35 pointer-events-none z-0" />
+    <div className="min-h-screen bg-black relative text-zinc-100 flex flex-col font-sans overflow-x-hidden antialiased selection:bg-indigo-500/30">
+      
+      {/* NOISE OVERLAY FOR TEXTURE */}
+      <div className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
 
       {/* SOCKET NETWORK STATUS FLOATER */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5 py-1 px-2.5 rounded-full border bg-slate-950/80 border-slate-800 text-[10px] font-bold text-slate-400 select-none shadow-md shadow-black/25">
-        {connected ? (
-          <>
-            <Wifi className="w-3 h-3 text-emerald-400 animate-pulse" />
-            <span>CONNECTED</span>
-          </>
-        ) : (
-          <>
-            <WifiOff className="w-3 h-3 text-rose-500" />
-            <span className="text-rose-400">RECONNECTING...</span>
-          </>
-        )}
+      <div className="absolute top-6 right-6 z-50 flex items-center gap-2 select-none">
+        <div className={cn(
+          "h-2 w-2 rounded-full",
+          connected ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.5)]"
+        )} />
+        {!connected && <span className="text-[10px] font-medium text-rose-500/80 tracking-widest uppercase">Reconnecting</span>}
       </div>
 
       {/* HEADER LOGO */}
       {screen !== 'GAME' && (
-        <header className="w-full text-center py-8 z-10 select-none">
+        <header className="w-full text-center pt-16 pb-8 z-10 select-none">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="inline-flex flex-col items-center gap-1"
           >
-            <div className="p-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-600 shadow-md">
-              <Sparkles className="w-5 h-5 text-slate-950 stroke-[2.5]" />
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-[3px] bg-indigo-500 rotate-45" />
+              <h1 className="text-xl font-bold tracking-tight text-white m-0 leading-none">
+                First To Ten
+              </h1>
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-white my-0 leading-none">
-              FIRST TO <span className="neon-text-cyan">TEN</span>
-            </h1>
+            <p className="text-xs text-zinc-500 font-medium tracking-widest uppercase mt-2">Real-Time Math Arena</p>
           </motion.div>
         </header>
       )}
 
       {/* MAIN SCREEN ROUTER */}
-      <main className="flex-grow w-full z-10 flex items-center justify-center">
+      <main className="flex-grow w-full z-10 flex items-center justify-center p-4">
         <AnimatePresence mode="wait">
           <motion.div
             key={screen}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.2 }}
-            className="w-full"
+            initial={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-md mx-auto"
           >
             {screen === 'AUTH' && (
               <NameEntry onLogin={handleLoginSuccess} socket={socket} />
@@ -155,8 +152,8 @@ export default function App() {
 
       {/* FOOTER */}
       {screen !== 'GAME' && (
-        <footer className="w-full text-center py-6 text-[10px] font-bold text-slate-650 select-none z-10 border-t border-slate-900/50">
-          FIRST TO TEN &copy; {new Date().getFullYear()} &bull; REAL-TIME MATHEMATICS ARENA
+        <footer className="w-full text-center py-8 text-[11px] font-medium text-zinc-600 select-none z-10">
+          First To Ten &copy; {new Date().getFullYear()}
         </footer>
       )}
     </div>

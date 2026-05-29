@@ -66,7 +66,7 @@ export default function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
 
   return (
     <div className="w-full max-w-sm mx-auto select-none no-select">
-      <div className="grid grid-cols-3 gap-2 bg-slate-900/60 p-3 rounded-2xl border border-slate-850 shadow-inner">
+      <div className="grid grid-cols-3 gap-[1px] bg-white/10 p-[1px] rounded-2xl overflow-hidden shadow-2xl">
         {keys.map((row, rowIdx) => (
           <React.Fragment key={rowIdx}>
             {row.map((key) => {
@@ -74,51 +74,48 @@ export default function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
               const isMinus = key === '-';
               
               return (
-                <motion.button
+                <button
                   key={key}
                   type="button"
-                  whileTap={!disabled ? { scale: 0.94 } : {}}
                   onClick={() => handleKeyPress(key)}
                   disabled={disabled}
-                  className={`h-14 rounded-xl flex items-center justify-center font-bold text-lg border transition-all ${
+                  className={`h-16 flex items-center justify-center font-medium text-xl transition-colors ${
                     disabled
-                      ? 'bg-slate-900 border-slate-900 text-slate-700'
+                      ? 'bg-black text-zinc-800'
                       : isDelete
-                      ? 'bg-rose-950/20 border-rose-900/20 hover:border-rose-900/40 text-rose-400 active:bg-rose-950/40'
+                      ? 'bg-[#141414] hover:bg-[#1a1a1a] text-zinc-400 active:bg-zinc-800'
                       : isMinus
-                      ? 'bg-slate-800 border-slate-750 text-cyan-400 hover:border-slate-600'
-                      : 'bg-slate-850 border-slate-800 hover:border-slate-700 text-slate-200 active:bg-slate-800'
+                      ? 'bg-[#141414] hover:bg-[#1a1a1a] text-indigo-400 active:bg-zinc-800'
+                      : 'bg-[#1a1a1a] hover:bg-[#222222] text-white active:bg-zinc-800'
                   }`}
                 >
                   {isDelete ? <Delete className="w-5 h-5" /> : key}
-                </motion.button>
+                </button>
               );
             })}
           </React.Fragment>
         ))}
 
         {/* Action Keys */}
-        <motion.button
+        <button
           type="button"
-          whileTap={!disabled && value !== '' ? { scale: 0.96 } : {}}
           onClick={() => handleKeyPress('C')}
           disabled={disabled || value === ''}
-          className="col-span-1 h-12 rounded-xl flex items-center justify-center font-semibold text-xs border border-slate-800/80 bg-slate-900 text-slate-400 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
+          className="col-span-1 h-14 bg-[#141414] hover:bg-[#1a1a1a] flex items-center justify-center font-medium text-xs text-zinc-500 hover:text-white transition-all disabled:opacity-50 disabled:pointer-events-none active:bg-zinc-800"
         >
           <RotateCcw className="w-3.5 h-3.5 mr-1" />
           Clear
-        </motion.button>
+        </button>
 
-        <motion.button
+        <button
           type="button"
-          whileTap={!disabled && value !== '' && value !== '-' ? { scale: 0.96 } : {}}
           onClick={onSubmit}
           disabled={disabled || value === '' || value === '-'}
-          className="col-span-2 h-12 rounded-xl flex items-center justify-center font-bold text-sm bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 shadow-md shadow-cyan-950/30 transition-all disabled:opacity-30 disabled:pointer-events-none"
+          className="col-span-2 h-14 flex items-center justify-center font-semibold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-all disabled:opacity-50 disabled:pointer-events-none active:bg-indigo-700"
         >
           Submit
-          <CornerDownLeft className="w-4 h-4 ml-1.5" />
-        </motion.button>
+          <CornerDownLeft className="w-4 h-4 ml-1.5 opacity-80" />
+        </button>
       </div>
     </div>
   );
