@@ -94,8 +94,8 @@ export default function App() {
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="inline-flex flex-col items-center gap-1"
           >
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-[3px] bg-indigo-500 rotate-45" />
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="First To Ten Logo" className="w-6 h-6 object-contain shadow-md rounded-[5px] border border-white/5" />
               <h1 className="text-xl font-bold tracking-tight text-white m-0 leading-none">
                 First To Ten
               </h1>
