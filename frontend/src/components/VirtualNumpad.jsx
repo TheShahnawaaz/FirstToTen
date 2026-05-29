@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Delete, CornerDownLeft, RotateCcw } from 'lucide-react';
 
 const VirtualNumpad = React.memo(function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
+  const lastTouchTimeRef = useRef(0);
   
   // Handle physical keyboard inputs
   useEffect(() => {
@@ -56,6 +57,30 @@ const VirtualNumpad = React.memo(function VirtualNumpad({ value, onChange, onSub
     }
   };
 
+  const handleTouch = (e, action) => {
+    if (disabled) return;
+    lastTouchTimeRef.current = Date.now();
+    e.preventDefault();
+    if (typeof action === 'function') {
+      action();
+    } else {
+      handleKeyPress(action);
+    }
+  };
+
+  const handleClick = (action) => {
+    if (disabled) return;
+    // Guard against simulated/ghost click events after touch
+    if (Date.now() - lastTouchTimeRef.current < 800) {
+      return;
+    }
+    if (typeof action === 'function') {
+      action();
+    } else {
+      handleKeyPress(action);
+    }
+  };
+
   const keys = [
     ['1', '2', '3'],
     ['4', '5', '6'],
@@ -76,15 +101,8 @@ const VirtualNumpad = React.memo(function VirtualNumpad({ value, onChange, onSub
                 <button
                   key={key}
                   type="button"
-                  onTouchStart={(e) => {
-                    if (disabled) return;
-                    e.preventDefault();
-                    handleKeyPress(key);
-                  }}
-                  onClick={() => {
-                    if (disabled) return;
-                    handleKeyPress(key);
-                  }}
+                  onTouchStart={(e) => handleTouch(e, key)}
+                  onClick={() => handleClick(key)}
                   disabled={disabled}
                   className={`h-16 flex items-center justify-center font-medium text-xl transition-colors ${
                     disabled
@@ -108,12 +126,11 @@ const VirtualNumpad = React.memo(function VirtualNumpad({ value, onChange, onSub
           type="button"
           onTouchStart={(e) => {
             if (disabled || value === '') return;
-            e.preventDefault();
-            handleKeyPress('C');
+            handleTouch(e, () => handleKeyPress('C'));
           }}
           onClick={() => {
             if (disabled || value === '') return;
-            handleKeyPress('C');
+            handleClick(() => handleKeyPress('C'));
           }}
           disabled={disabled || value === ''}
           className="col-span-1 h-14 bg-[#141414] hover:bg-[#1a1a1a] flex items-center justify-center font-medium text-xs text-zinc-500 hover:text-white transition-all disabled:opacity-50 disabled:pointer-events-none active:bg-zinc-800"
@@ -126,12 +143,11 @@ const VirtualNumpad = React.memo(function VirtualNumpad({ value, onChange, onSub
           type="button"
           onTouchStart={(e) => {
             if (disabled || value === '' || value === '-') return;
-            e.preventDefault();
-            onSubmit();
+            handleTouch(e, onSubmit);
           }}
           onClick={() => {
             if (disabled || value === '' || value === '-') return;
-            onSubmit();
+            handleClick(onSubmit);
           }}
           disabled={disabled || value === '' || value === '-'}
           className="col-span-2 h-14 flex items-center justify-center font-semibold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-all disabled:opacity-50 disabled:pointer-events-none active:bg-indigo-700"
