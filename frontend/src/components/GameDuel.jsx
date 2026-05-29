@@ -1,17 +1,157 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Volume2, VolumeX, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VirtualNumpad from './VirtualNumpad';
 import audio from '../utils/audio';
-import { Card } from './ui/Card';
 import { Button } from './ui/Button';
+
+// Sub-components for performance optimization (memoized to prevent re-renders on keystroke)
+
+const GameHeader = React.memo(function GameHeader({ roundNum, muted, onForfeit, onToggleMute }) {
+  return (
+    <div className="flex justify-between items-center py-4 border-b border-white/10 select-none">
+      <button
+        onClick={onForfeit}
+        className="text-xs font-semibold text-zinc-500 hover:text-white transition-colors"
+      >
+        Forfeit
+      </button>
+
+      <div className="flex flex-col items-center">
+        <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-none mb-1">Match</span>
+        <span className="text-sm font-semibold text-white leading-none">Round {roundNum}</span>
+      </div>
+
+      <button
+        onClick={onToggleMute}
+        className="text-zinc-500 hover:text-white transition-colors"
+      >
+        {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+      </button>
+    </div>
+  );
+});
+
+const PlayerPanel = React.memo(function PlayerPanel({ player, score, isYou, opponentTyping = false }) {
+  const renderScorePips = (playerScore, isActivePlayer) => {
+    return (
+      <div className="flex gap-[2px] mt-2 w-full">
+        {Array.from({ length: 10 }).map((_, idx) => {
+          const isScored = idx < playerScore;
+          return (
+            <div
+              key={idx}
+              className={`flex-1 h-1 rounded-full transition-all duration-300 ${
+                isScored 
+                  ? isActivePlayer ? 'bg-white' : 'bg-zinc-400'
+                  : 'bg-white/10'
+              }`}
+            />
+          );
+        })}
+      </div>
+    );
+  };
+
+  if (isYou) {
+    return (
+      <div className="flex-1 flex flex-col items-start min-w-0 bg-[#111111] border border-white/10 rounded-xl p-2.5">
+        <div className="flex items-center gap-2 w-full">
+          <div className="w-6 h-6 rounded-full border border-white/10 bg-[#1a1a1a] flex-shrink-0 overflow-hidden">
+            <img src={player.picture} alt="" className="w-full h-full object-cover" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="text-[8px] font-semibold text-zinc-500 block uppercase tracking-wider leading-none mb-0.5">You</span>
+            <span className="text-xs font-semibold text-white block truncate leading-none">{player.name}</span>
+          </div>
+          <span className="text-sm font-bold text-white flex-shrink-0">{score}</span>
+        </div>
+        {renderScorePips(score, true)}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col items-end min-w-0 bg-[#111111] border border-white/10 rounded-xl p-2.5 relative">
+      <div className="flex items-center gap-2 w-full justify-end text-right">
+        <span className="text-sm font-bold text-zinc-400 flex-shrink-0">{score}</span>
+        <div className="min-w-0 flex-1">
+          <span className="text-[8px] font-semibold text-zinc-500 block uppercase tracking-wider leading-none mb-0.5">Opponent</span>
+          <span className="text-xs font-semibold text-zinc-300 block truncate leading-none">{player.name}</span>
+        </div>
+        <div className="w-6 h-6 rounded-full border border-white/10 bg-[#1a1a1a] flex-shrink-0 overflow-hidden opacity-80">
+          <img src={player.picture} alt="" className="w-full h-full object-cover" />
+        </div>
+      </div>
+      {renderScorePips(score, false)}
+      
+      {/* Real-time typing status tag */}
+      <AnimatePresence>
+        {opponentTyping && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="absolute -top-7 right-0 flex items-center gap-1.5 py-1 px-2.5 rounded border border-indigo-500/20 bg-indigo-500/10 text-[9px] font-semibold text-indigo-400"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+            Typing...
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+
+const TimerCircle = React.memo(function TimerCircle({ timeRemaining }) {
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (timeRemaining / 10) * circumference;
+
+  return (
+    <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center bg-[#111111] border border-white/10 rounded-xl">
+      <svg className="w-12 h-12 transform -rotate-90">
+        <circle
+          cx="24"
+          cy="24"
+          r={radius}
+          className="stroke-white/5 stroke-[2] fill-none"
+        />
+        <motion.circle
+          cx="24"
+          cy="24"
+          r={radius}
+          className={`stroke-[2] fill-none ${
+            timeRemaining <= 3 ? 'stroke-rose-500' : 'stroke-white'
+          }`}
+          strokeDasharray={circumference}
+          animate={{ strokeDashoffset }}
+          transition={{ duration: 1, ease: 'linear' }}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center font-mono">
+        <span className={`text-[13px] font-semibold ${
+          timeRemaining <= 3 ? 'text-rose-500 text-sm animate-pulse' : 'text-zinc-300'
+        }`}>
+          {timeRemaining}
+        </span>
+      </div>
+    </div>
+  );
+});
+
 
 export default function GameDuel({ user, opponent, socket, initialScores, onLeave, onGameOver }) {
   const [scores, setScores] = useState(initialScores || {});
   const [roundNum, setRoundNum] = useState(1);
   const [questionText, setQuestionText] = useState('...');
   const [timeRemaining, setTimeRemaining] = useState(10);
+  
+  // Input states
   const [inputValue, setInputValue] = useState('');
+  const inputValueRef = useRef('');
+
   const [disabled, setDisabled] = useState(false);
   const [shake, setShake] = useState(false);
   const [muted, setMuted] = useState(audio.isMuted());
@@ -27,6 +167,7 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
   // Keep refs of fast-changing states for socket callback scopes to prevent listener re-registration
   const roundStatusRef = useRef('thinking');
   const disabledRef = useRef(false);
+  const wasTypingRef = useRef(false);
 
   const setRoundStatus = (status) => {
     roundStatusRef.current = status;
@@ -36,6 +177,11 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
   const updateDisabledState = (state) => {
     disabledRef.current = state;
     setDisabled(state);
+  };
+
+  const updateInputValue = (val) => {
+    inputValueRef.current = val;
+    setInputValue(val);
   };
 
   // Play match start chime on load
@@ -52,7 +198,8 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
       setRoundNum(data.roundNum);
       setQuestionText(data.questionText);
       setTimeRemaining(data.timeLimit);
-      setInputValue('');
+      updateInputValue('');
+      wasTypingRef.current = false;
       updateDisabledState(false);
       setRoundStatus('thinking');
       setRoundEndData(null);
@@ -85,7 +232,8 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
       if (!data.correct) {
         setShake(true);
         audio.playWrong();
-        setInputValue(''); // Clear incorrect input immediately
+        updateInputValue(''); // Clear incorrect input immediately
+        wasTypingRef.current = false;
         setShowErrorNotice(true);
         
         // Broadcast that we stopped typing since input is cleared
@@ -144,35 +292,41 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
     };
   }, [socket, user.id, opponent.id, onGameOver]);
 
-  const handleInputChange = (val) => {
-    if (disabled) return;
-    setInputValue(val);
-    // Broadcast typing status to opponent
-    socket.emit('typing_status', { isTyping: val.length > 0 });
-  };
+  const handleInputChange = useCallback((val) => {
+    if (disabledRef.current) return;
+    updateInputValue(val);
+    
+    // Broadcast typing status to opponent only when typing status changes
+    const isTyping = val.length > 0;
+    if (isTyping !== wasTypingRef.current) {
+      wasTypingRef.current = isTyping;
+      socket.emit('typing_status', { isTyping });
+    }
+  }, [socket]);
 
-  const handleSubmit = () => {
-    if (disabled || !inputValue.trim() || inputValue === '-') return;
-    socket.emit('submit_answer', { answer: inputValue.trim() });
-  };
+  const handleSubmit = useCallback(() => {
+    const val = inputValueRef.current;
+    if (disabledRef.current || !val.trim() || val === '-') return;
+    socket.emit('submit_answer', { answer: val.trim() });
+  }, [socket]);
 
-  const handleToggleMute = () => {
+  const handleToggleMute = useCallback(() => {
     const isNowMuted = audio.toggleMute();
     setMuted(isNowMuted);
-  };
+  }, []);
 
-  const handleForfeit = () => {
+  const handleForfeit = useCallback(() => {
     if (window.confirm('Are you sure you want to forfeit this duel? Your opponent will win.')) {
       socket.emit('leave_game');
       onLeave();
     }
-  };
+  }, [socket, onLeave]);
 
   // Determine round end UI banner cases
   const getRoundEndMessage = () => {
     if (!roundEndData) return { title: 'Round Ended', desc: '', icon: null };
 
-    const { winnerId, reason, correctAnswer, elapsedMs, roundDetails } = roundEndData;
+    const { winnerId, reason, elapsedMs } = roundEndData;
     
     if (reason === 'opponent_disconnected' || reason === 'opponent_left') {
       return {
@@ -211,134 +365,39 @@ export default function GameDuel({ user, opponent, socket, initialScores, onLeav
 
   const endMsg = getRoundEndMessage();
 
-  // SVG Circular progress configurations
-  const radius = 22;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (timeRemaining / 10) * circumference;
-
-  const renderScorePips = (playerScore, isActivePlayer = true) => {
-    return (
-      <div className="flex gap-[2px] mt-2 w-full">
-        {Array.from({ length: 10 }).map((_, idx) => {
-          const isScored = idx < playerScore;
-          return (
-            <div
-              key={idx}
-              className={`flex-1 h-1 rounded-full transition-all duration-300 ${
-                isScored 
-                  ? isActivePlayer ? 'bg-white' : 'bg-zinc-400'
-                  : 'bg-white/10'
-              }`}
-            />
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <div className="w-full max-w-md mx-auto flex flex-col min-h-[92svh] justify-between relative overflow-hidden">
       
       {/* HEADER BAR */}
-      <div className="flex justify-between items-center py-4 border-b border-white/10 select-none">
-        <button
-          onClick={handleForfeit}
-          className="text-xs font-semibold text-zinc-500 hover:text-white transition-colors"
-        >
-          Forfeit
-        </button>
-
-        <div className="flex flex-col items-center">
-          <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-none mb-1">Match</span>
-          <span className="text-sm font-semibold text-white leading-none">Round {roundNum}</span>
-        </div>
-
-        <button
-          onClick={handleToggleMute}
-          className="text-zinc-500 hover:text-white transition-colors"
-        >
-          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-        </button>
-      </div>
+      <GameHeader
+        roundNum={roundNum}
+        muted={muted}
+        onForfeit={handleForfeit}
+        onToggleMute={handleToggleMute}
+      />
 
       {/* MATCH PLAYERS STATUS PANEL */}
       <div className="flex items-stretch justify-between gap-3 mt-6 select-none h-16">
         
         {/* Left Side: You */}
-        <div className="flex-1 flex flex-col items-start min-w-0 bg-[#111111] border border-white/10 rounded-xl p-2.5">
-          <div className="flex items-center gap-2 w-full">
-            <div className="w-6 h-6 rounded-full border border-white/10 bg-[#1a1a1a] flex-shrink-0 overflow-hidden">
-              <img src={user.picture} alt="" className="w-full h-full object-cover" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="text-[8px] font-semibold text-zinc-500 block uppercase tracking-wider leading-none mb-0.5">You</span>
-              <span className="text-xs font-semibold text-white block truncate leading-none">{user.name}</span>
-            </div>
-            <span className="text-sm font-bold text-white flex-shrink-0">{scores[user.id] || 0}</span>
-          </div>
-          {renderScorePips(scores[user.id] || 0, true)}
-        </div>
+        <PlayerPanel
+          player={user}
+          score={scores[user.id] || 0}
+          isYou={true}
+        />
 
         {/* MIDDLE: Circular Timer */}
-        <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center bg-[#111111] border border-white/10 rounded-xl">
-          <svg className="w-12 h-12 transform -rotate-90">
-            <circle
-              cx="24"
-              cy="24"
-              r={radius}
-              className="stroke-white/5 stroke-[2] fill-none"
-            />
-            <motion.circle
-              cx="24"
-              cy="24"
-              r={radius}
-              className={`stroke-[2] fill-none ${
-                timeRemaining <= 3 ? 'stroke-rose-500' : 'stroke-white'
-              }`}
-              strokeDasharray={circumference}
-              animate={{ strokeDashoffset }}
-              transition={{ duration: 1, ease: 'linear' }}
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center font-mono">
-            <span className={`text-[13px] font-semibold ${
-              timeRemaining <= 3 ? 'text-rose-500 text-sm animate-pulse' : 'text-zinc-300'
-            }`}>
-              {timeRemaining}
-            </span>
-          </div>
-        </div>
+        <TimerCircle
+          timeRemaining={timeRemaining}
+        />
 
         {/* Right Side: Opponent */}
-        <div className="flex-1 flex flex-col items-end min-w-0 bg-[#111111] border border-white/10 rounded-xl p-2.5 relative">
-          <div className="flex items-center gap-2 w-full justify-end text-right">
-            <span className="text-sm font-bold text-zinc-400 flex-shrink-0">{scores[opponent.id] || 0}</span>
-            <div className="min-w-0 flex-1">
-              <span className="text-[8px] font-semibold text-zinc-500 block uppercase tracking-wider leading-none mb-0.5">Opponent</span>
-              <span className="text-xs font-semibold text-zinc-300 block truncate leading-none">{opponent.name}</span>
-            </div>
-            <div className="w-6 h-6 rounded-full border border-white/10 bg-[#1a1a1a] flex-shrink-0 overflow-hidden opacity-80">
-              <img src={opponent.picture} alt="" className="w-full h-full object-cover" />
-            </div>
-          </div>
-          {renderScorePips(scores[opponent.id] || 0, false)}
-          
-          {/* Real-time typing status tag */}
-          <AnimatePresence>
-            {opponentTyping && (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="absolute -top-7 right-0 flex items-center gap-1.5 py-1 px-2.5 rounded border border-indigo-500/20 bg-indigo-500/10 text-[9px] font-semibold text-indigo-400"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-                Typing...
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <PlayerPanel
+          player={opponent}
+          score={scores[opponent.id] || 0}
+          isYou={false}
+          opponentTyping={opponentTyping}
+        />
         
       </div>
 

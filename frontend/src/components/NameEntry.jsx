@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Shuffle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from './ui/Button';
@@ -7,7 +7,7 @@ import { Card } from './ui/Card';
 
 export default function NameEntry({ onLogin, socket }) {
   const [name, setName] = useState('');
-  const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
+  const [seed, setSeed] = useState(() => Math.random().toString(36).substring(7));
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 

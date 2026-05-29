@@ -62,9 +62,6 @@ export const playWrong = () => {
 
 export const playCorrect = () => {
   // Rising major 3rd/5th chime
-  const ctx = getAudioContext();
-  const now = ctx.currentTime;
-  
   playTone(523.25, 'sine', 0.15, 0.08, 0.01, 0); // C5
   playTone(659.25, 'sine', 0.15, 0.08, 0.01, 0.06); // E5
   playTone(783.99, 'sine', 0.25, 0.1, 0.01, 0.12); // G5
@@ -86,8 +83,6 @@ export const playVictory = () => {
 
 export const playDefeat = () => {
   // Descending heavy minor chord
-  const ctx = getAudioContext();
-  const now = ctx.currentTime;
   playTone(220.00, 'sawtooth', 0.4, 0.1, 0.01, 0); // A3
   playTone(261.63, 'square', 0.4, 0.08, 0.01, 0.05); // C4
   playTone(311.13, 'sine', 0.5, 0.06, 0.01, 0.1); // Eb4

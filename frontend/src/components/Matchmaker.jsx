@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LogOut, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/Button';
@@ -10,18 +10,14 @@ export default function Matchmaker({ user, onLogout, socket, onMatchFound }) {
 
   // Queue timer ticker
   useEffect(() => {
-    let timer = null;
-    if (inQueue) {
-      setQueueSeconds(0);
-      timer = setInterval(() => {
-        setQueueSeconds((prev) => prev + 1);
-      }, 1000);
-    } else {
-      setQueueSeconds(0);
-    }
+    if (!inQueue) return;
+
+    const timer = setInterval(() => {
+      setQueueSeconds((prev) => prev + 1);
+    }, 1000);
 
     return () => {
-      if (timer) clearInterval(timer);
+      clearInterval(timer);
     };
   }, [inQueue]);
 
@@ -31,6 +27,7 @@ export default function Matchmaker({ user, onLogout, socket, onMatchFound }) {
 
     const handleMatchFound = (data) => {
       setInQueue(false);
+      setQueueSeconds(0);
       onMatchFound(data);
     };
 
@@ -45,9 +42,11 @@ export default function Matchmaker({ user, onLogout, socket, onMatchFound }) {
     if (inQueue) {
       socket.emit('leave_queue');
       setInQueue(false);
+      setQueueSeconds(0);
     } else {
       socket.emit('join_queue');
       setInQueue(true);
+      setQueueSeconds(0);
     }
   };
 

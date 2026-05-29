@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import NameEntry from './components/NameEntry';
 import Matchmaker from './components/Matchmaker';
 import GameDuel from './components/GameDuel';
 import GameAnalysis from './components/GameAnalysis';
-import { Wifi, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from './utils/cn';
 

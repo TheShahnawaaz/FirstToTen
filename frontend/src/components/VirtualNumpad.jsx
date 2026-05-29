@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import { Delete, CornerDownLeft, RotateCcw } from 'lucide-react';
-import { motion } from 'framer-motion';
 
-export default function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
+const VirtualNumpad = React.memo(function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
   
   // Handle physical keyboard inputs
   useEffect(() => {
@@ -77,7 +76,15 @@ export default function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
                 <button
                   key={key}
                   type="button"
-                  onClick={() => handleKeyPress(key)}
+                  onTouchStart={(e) => {
+                    if (disabled) return;
+                    e.preventDefault();
+                    handleKeyPress(key);
+                  }}
+                  onClick={() => {
+                    if (disabled) return;
+                    handleKeyPress(key);
+                  }}
                   disabled={disabled}
                   className={`h-16 flex items-center justify-center font-medium text-xl transition-colors ${
                     disabled
@@ -99,7 +106,15 @@ export default function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
         {/* Action Keys */}
         <button
           type="button"
-          onClick={() => handleKeyPress('C')}
+          onTouchStart={(e) => {
+            if (disabled || value === '') return;
+            e.preventDefault();
+            handleKeyPress('C');
+          }}
+          onClick={() => {
+            if (disabled || value === '') return;
+            handleKeyPress('C');
+          }}
           disabled={disabled || value === ''}
           className="col-span-1 h-14 bg-[#141414] hover:bg-[#1a1a1a] flex items-center justify-center font-medium text-xs text-zinc-500 hover:text-white transition-all disabled:opacity-50 disabled:pointer-events-none active:bg-zinc-800"
         >
@@ -109,7 +124,15 @@ export default function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
 
         <button
           type="button"
-          onClick={onSubmit}
+          onTouchStart={(e) => {
+            if (disabled || value === '' || value === '-') return;
+            e.preventDefault();
+            onSubmit();
+          }}
+          onClick={() => {
+            if (disabled || value === '' || value === '-') return;
+            onSubmit();
+          }}
           disabled={disabled || value === '' || value === '-'}
           className="col-span-2 h-14 flex items-center justify-center font-semibold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-all disabled:opacity-50 disabled:pointer-events-none active:bg-indigo-700"
         >
@@ -119,4 +142,6 @@ export default function VirtualNumpad({ value, onChange, onSubmit, disabled }) {
       </div>
     </div>
   );
-}
+});
+
+export default VirtualNumpad;

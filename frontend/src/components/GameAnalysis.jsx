@@ -1,4 +1,3 @@
-import React from 'react';
 import { Trophy, RefreshCw, Zap, Target } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { motion } from 'framer-motion';
